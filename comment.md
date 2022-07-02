@@ -1,14 +1,17 @@
 ## 记录
 基于vuex3, 分支3.x
 
-## Question
+### Question
 ~~1. 没看懂为啥要做context？~~
+
 store为整个store实例，context是当前module
+
 ~~2. 为啥vuex要做成响应式的？~~
+
 因为响应式的数据才能和Vue之前建立发布-订阅的关系，数据变了才能引起页面的重新渲染
 
+### 笔记
 
-install方法 把 store实例暴露给this.$store，让用户可以访问
 
 在vue中使用vuex3.0一般方法是：
 ```
