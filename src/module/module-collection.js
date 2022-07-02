@@ -31,6 +31,7 @@ export default class ModuleCollection {
     }
 
     const newModule = new Module(rawModule, runtime)
+    // 根store放在root上，其子module里的store都放在夫store的_children上
     if (path.length === 0) {
       this.root = newModule
     } else {

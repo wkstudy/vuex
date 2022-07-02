@@ -17,7 +17,7 @@ export default class Module {
   get namespaced () {
     return !!this._rawModule.namespaced
   }
-
+  // 通过_children连接两个层级的modules
   addChild (key, module) {
     this._children[key] = module
   }

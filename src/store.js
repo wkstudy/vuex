@@ -31,6 +31,7 @@ export class Store {
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
+    // 初始化整个store并放到this._modules上
     this._modules = new ModuleCollection(options)
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
@@ -55,10 +56,12 @@ export class Store {
     // init root module.
     // this also recursively registers all sub-modules
     // and collects all module getters inside this._wrappedGetters
+    // 初始化各个module为store
     installModule(this, state, [], this._modules.root)
 
     // initialize the store vm, which is responsible for the reactivity
     // (also registers _wrappedGetters as computed properties)
+    // 把state 和getter存为Vue实例的data和comouted，直接称为响应式数据
     resetStoreVM(this, state)
 
     // apply plugins
@@ -70,6 +73,7 @@ export class Store {
     }
   }
 
+  // 我们访问的实际是vue实例上的state
   get state () {
     return this._vm._data.$$state
   }
@@ -303,6 +307,7 @@ function resetStoreVM (store, state, hot) {
   // some funky global mixins
   const silent = Vue.config.silent
   Vue.config.silent = true
+  // 把state存在vue中，变成响应式数据
   store._vm = new Vue({
     data: {
       $$state: state
@@ -352,6 +357,7 @@ function installModule (store, rootState, path, module, hot) {
           )
         }
       }
+      // 把各个层级的state连接起来  a[namespace]= b
       Vue.set(parentState, moduleName, module.state)
     })
   }
@@ -374,6 +380,7 @@ function installModule (store, rootState, path, module, hot) {
     registerGetter(store, namespacedType, getter, local)
   })
 
+  // 递归处理子module
   module.forEachChild((child, key) => {
     installModule(store, rootState, path.concat(key), child, hot)
   })
@@ -387,6 +394,7 @@ function makeLocalContext (store, namespace, path) {
   const noNamespace = namespace === ''
 
   const local = {
+    // 把子module里的dispatch、commit处理放到根store里，（type=namespace+type是为了防止不同module里相同的方法名导致重复）
     dispatch: noNamespace ? store.dispatch : (_type, _payload, _options) => {
       const args = unifyObjectStyle(_type, _payload, _options)
       const { payload, options } = args
@@ -463,14 +471,17 @@ function makeLocalGetters (store, namespace) {
 
 function registerMutation (store, type, handler, local) {
   const entry = store._mutations[type] || (store._mutations[type] = [])
+  // 把mutation包了一层，并存在store._mutations里
   entry.push(function wrappedMutationHandler (payload) {
     handler.call(store, local.state, payload)
   })
 }
 
 function registerAction (store, type, handler, local) {
+   // 把action包了一层，并存在store._actions里
   const entry = store._actions[type] || (store._actions[type] = [])
   entry.push(function wrappedActionHandler (payload) {
+    // 此处提供的是context
     let res = handler.call(store, {
       dispatch: local.dispatch,
       commit: local.commit,

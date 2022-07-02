@@ -19,6 +19,7 @@ export default function (Vue) {
    * Vuex init hook, injected into each instances init hooks list.
    */
 
+  // 把vuex创建的store暴露给this.$store
   function vuexInit () {
     const options = this.$options
     // store injection
